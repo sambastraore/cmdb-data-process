@@ -12,15 +12,13 @@ import java.util.Set;
 public class InstanceGroup {
     private String name;
     private String description;
-    private String template; // dispo avec .relationship
+    private String template;
     private String region;
-    private Set<String> zones;
-    private Integer minInstances; //non dispo
-    private Integer maxInstances; //non dispo
-    private String status; // non dispo
-    private Boolean managed; // dispo avec .relationship
+    private Integer minInstances;
+    private Integer maxInstances;
+    private String status;
+    private String manager;
     private Boolean autoscaling;
-    private Boolean autohealing;
 
     //relationship
     private String vpc;

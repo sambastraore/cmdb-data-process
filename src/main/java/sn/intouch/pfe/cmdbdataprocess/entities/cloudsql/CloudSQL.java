@@ -1,5 +1,6 @@
 package sn.intouch.pfe.cmdbdataprocess.entities.cloudsql;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import sn.intouch.pfe.cmdbdataprocess.entities.network.Subnet;
@@ -9,6 +10,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@Builder
 public class CloudSQL {
     private String name;
     private String region;
@@ -17,14 +19,14 @@ public class CloudSQL {
     private Map<String,String> characteristics;
     private Boolean backup;
     private String privateIP;
-    private String replicaName;
+    private String replication;
     private Set<String> ingress;
 
     //relationship
     private String IPAddress;
 
     //relationship
-    private Subnet subnet;
+    private String vpc;
 
     //relationship
     private Set<String> serverlessNames;

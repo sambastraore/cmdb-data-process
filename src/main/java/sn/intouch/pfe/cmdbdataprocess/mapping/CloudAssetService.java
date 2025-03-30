@@ -14,6 +14,10 @@ public class CloudAssetService {
     static String scope = "projects/eme-iacc";
     static String scope1 = "organizations/349241044184";
     static String scope2 = "folders/437674684111";
+    static String cloudSqlInstanceName = "eme-iacc";
+    static String query = "networkConfig.networks.network:" + cloudSqlInstanceName +
+            " OR connectivity.cloudsql.instance=" + cloudSqlInstanceName;
+
 
     public static void listAssets() {
         try (AssetServiceClient assetServiceClient = CloudAssetAuthUtil.getAssetServiceClient()) {
@@ -21,7 +25,11 @@ public class CloudAssetService {
                 //.addAssetTypes(AssetMapping.TARGET_HTTPS_PROXY)
                     //.addAssetTypes(AssetMapping.TARGET_HTTP_PROXY)
                     //.addAssetTypes(AssetMapping.IP_ADDRESSES)
-                    .addAssetTypes("appengine.googleapis.com/Version")
+                    //.addAssetTypes("appengine.googleapis.com/Version")
+                    .addAssetTypes("compute.googleapis.com/Instance")
+                    .addAssetTypes("cloudfunctions.googleapis.com/CloudFunction")
+                    .addAssetTypes("run.googleapis.com/Service")
+                    .setQuery(query)
                     //.setQuery("name:lb-wildfly-test-1")
                     //.addAssetTypes(AssetMapping.CloudSQL)
                     //.addAssetTypes("compute.googleapis.com/BackendService")
