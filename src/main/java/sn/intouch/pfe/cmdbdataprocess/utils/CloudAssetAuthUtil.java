@@ -7,13 +7,13 @@ import com.google.cloud.asset.v1.AssetServiceSettings;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+
 public class CloudAssetAuthUtil {
 
-    private static final String CREDENTIALS_PATH = "/Users/sambastraore/Desktop/pfe_tra/serviceAccountKey.json";
 
     public static AssetServiceClient getAssetServiceClient() throws IOException {
         GoogleCredentials credentials;
-        try (FileInputStream serviceAccountStream = new FileInputStream(CREDENTIALS_PATH)) {
+        try (FileInputStream serviceAccountStream = new FileInputStream(Config.CREDENTIALS_PATH)) {
             credentials = GoogleCredentials.fromStream(serviceAccountStream);
         }
 
