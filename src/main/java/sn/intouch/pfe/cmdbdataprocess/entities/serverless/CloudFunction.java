@@ -8,6 +8,8 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CloudFunction {
     private String name;
     private String region;

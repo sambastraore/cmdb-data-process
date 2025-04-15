@@ -1,14 +1,14 @@
 package sn.intouch.pfe.cmdbdataprocess.entities.vms;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class InstanceGroup {
     private String name;
     private String description;

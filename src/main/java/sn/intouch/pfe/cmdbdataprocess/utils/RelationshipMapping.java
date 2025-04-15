@@ -1,4 +1,4 @@
-package sn.intouch.pfe.cmdbdataprocess.mapping;
+package sn.intouch.pfe.cmdbdataprocess.utils;
 
 public class RelationshipMapping {
     public static final String BACKEND_SERVICE_TO_INSTANCE_GROUP = "COMPUTE_BACKEND_SERVICE_TO_INSTANCE_GROUP";
@@ -17,6 +17,18 @@ public class RelationshipMapping {
     public static final String GROUP_TO_MANAGER = "INSTANCEGROUP_TO_INSTANCEGROUPMANAGER";
     public static final String EUROPE_EME_IACC_CONNECTION_CLOUDSQL = "eme-iacc:europe-west1:eme-iacc";
     public static final String US_USER_CONNECTION_CLOUDSQL = "eme-iacc:us-east1:user";
+    public static final String DISK_VM_RELATION = "Map_VMs_for_disk";
+    public static final String CLOUDRUN_CLOUDSQL_RELATION = "Map_cloudsql_for_cloudrun";
+    public static final String CLOUDSQL_VPC_RELATION = "Map_vpc_for_cloud_sqls";
+    public static final String IG_SUBNET_RELATION = "Map_subnet_for_instance_groups";
+    public static final String IG_VPC_RELATION = "Map_vpc_for_instance_groups";
+    public static final String SUBNET_VPC_RELATION = "Map_vpc_for_subnets";
+    public static final String VM_IG_RELATION = "Map_instance_group_for_vms";
+    public static final String VPC_PROJECT_RELATION = "Map_project_for_vpcs";
+
+    public static final String VM_FOR_DISK = "Map_disk_for_vms";
+
+
 
 
 

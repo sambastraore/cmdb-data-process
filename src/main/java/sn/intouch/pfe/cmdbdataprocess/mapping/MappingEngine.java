@@ -6,9 +6,12 @@ import com.google.protobuf.Value;
 import lombok.extern.log4j.Log4j2;
 import sn.intouch.pfe.cmdbdataprocess.utils.AssetMapping;
 import sn.intouch.pfe.cmdbdataprocess.utils.CloudAssetAuthUtil;
+import sn.intouch.pfe.cmdbdataprocess.utils.RelationshipMapping;
 
 import java.io.IOException;
 import java.util.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 @Log4j2
 public class MappingEngine {
@@ -16,7 +19,6 @@ public class MappingEngine {
 public static String getName (Asset asset){
     Map<Descriptors.FieldDescriptor,Object> allFields = asset.getAllFields();
     return (String)allFields.get(Asset.getDescriptor().findFieldByName("name"));
-
 }
 
 public static String getAssetType (Asset asset){
@@ -37,10 +39,6 @@ public static Map<String, Value> getFields(Resource resource){
     return resource.getData().getFieldsMap();
 }
 
-public static String getFunctionsUrl(Map<String,Value> dataFields){ // works only for cloud functions
-    return dataFields.containsKey("url") ? dataFields.get("url").getStringValue() : "";
-}
-
 public static Map<String,Value> getStructValue (Map<String,Value> dataFields,String structName){ // for ingress, egress, appId for cloud functions
     return dataFields.containsKey(structName) ? dataFields.get(structName).getStructValue().getFieldsMap() : new HashMap<>();
 }
@@ -54,16 +52,6 @@ public static String getStringValue (Map<String,Value> mapValue, String key){
     return mapValue.containsKey(key) ? mapValue.get(key).getStringValue() : "";
 }
 
-
-
-public static String getFunctionsIngressSettings (Map<String,Value> serviceConfigFields){
-    return serviceConfigFields.containsKey("ingressSettings") ? serviceConfigFields.get("ingressSettings").getStringValue() : "";
-}
-
-public static String getFunctionsEgressSettings (Map<String,Value> serviceConfigFields){
-        return serviceConfigFields.containsKey("vpcConnectorEgressSettings") ? serviceConfigFields.get("vpcConnectorEgressSettings").getStringValue() : "";
-    }
-
 public static String getFunctionsAppId (Map<String,Value> serviceConfigFields){
     String service = "";
     if (serviceConfigFields.containsKey("service")) {
@@ -72,10 +60,6 @@ public static String getFunctionsAppId (Map<String,Value> serviceConfigFields){
     String[] serviceParts = service.split("/");
     return serviceParts[serviceParts.length - 1];
 
-}
-
-public static String getDiskSize (Map<String,Value> dataFields){
-    return dataFields.containsKey("sizeGb") ? dataFields.get("sizeGb").getStringValue() : "";
 }
 
 public static String getProjectFromName(String name){
@@ -93,15 +77,6 @@ public static String getProjectFromName(String name){
 public static String getRealValue(String string){
     String[] parts = string.split("/");
     return parts[parts.length - 1];
-}
-
-public static String getLoadBalancerNameFromProxy(String string){
-    String[] parts = string.split("-target-proxy");
-    return parts[0];
-}
-
-public static List<Asset> getFrontends(Asset backend){
-    return new ArrayList<>();
 }
 
     public static Map<String,List<String>> getLoadBalancerRelationships(String projectId, Asset urlmap)
@@ -201,30 +176,6 @@ public static List<Asset> getFrontends(Asset backend){
         return "";
     }
 
-    private static Map<String,String> handleResponse(AssetServiceClient.ListAssetsPagedResponse response) {
-        Map<String,String> theResponse = new HashMap<>();
-        for (Asset asset : response.getPage().getValues()) {
-            Map< Descriptors.FieldDescriptor,Object> fields = asset.getAllFields();
-            String asset_type = (String) fields.get(Asset.getDescriptor().findFieldByName("asset_type"));
-            asset_type = getRealValue(asset_type);
-            String name = (String) fields.get(Asset.getDescriptor().findFieldByName("name"));
-            name = getRealValue(name);
-            //theResponse.put("asset_type",asset_type);
-            //theResponse.put("asset_name",name);
-            //theResponse.put("relationship",relationship);
-            //theResponse.put("related_asset",MappingEngine.getRealValue(relatedAssetName));
-            //log.info("asset type : " + asset_type);
-            //log.info("asset name : " + name);
-            //log.info("relationship : " + relationship);
-            //log.info("related asset : " + MappingEngine.getRealValue(relatedAssetName));
-            //log.info(getRelatedAsset(asset).get("relationship"));
-            //log.info(getRelatedAsset(asset).get("related_asset"));
-            System.out.println("-------------------------------------------------");
-        }
-
-        return theResponse;
-    }
-
     public static String getRelatedAssetName(Asset asset){
         Map< Descriptors.FieldDescriptor,Object> fields = asset.getAllFields();
         RelatedAsset relatedAsset = (RelatedAsset) fields.get(Asset.getDescriptor().findFieldByName("related_asset"));
@@ -235,5 +186,99 @@ public static List<Asset> getFrontends(Asset backend){
         Map< Descriptors.FieldDescriptor,Object> fields = asset.getAllFields();
         RelatedAsset relatedAsset = (RelatedAsset) fields.get(Asset.getDescriptor().findFieldByName("related_asset"));
         return relatedAsset.getRelationshipType();
+    }
+
+    public static Set<String> sameSubnetSQLInstancesForVM (String projectId, Asset vm) throws IOException {
+        String[] assetTypes = {
+                AssetMapping.VM_INSTANCE,
+                AssetMapping.SUBNETWORK,
+                AssetMapping.CLOUD_SQL,
+        };
+        Set<String> ips = new HashSet<>();
+        try (AssetServiceClient client = CloudAssetAuthUtil.getAssetServiceClient()) {
+            ProjectName parent = ProjectName.of(projectId);
+
+            ListAssetsRequest request =
+                    ListAssetsRequest.newBuilder()
+                            .setParent(parent.toString())
+                            .addAllAssetTypes(Arrays.asList(assetTypes))
+                            .setContentType(ContentType.RESOURCE)
+                            .build();
+            AssetServiceClient.ListAssetsPagedResponse response = client.listAssets(request);
+            String privateIP = "";
+            String range = "";
+            List<Value> networkInterfaces = null;
+            for (Asset asset : response.getPage().getValues()){
+                if (asset.getName().equals(vm.getName())){
+                    Resource resource = getResource(asset);
+                    Map<String, Value> fields = getFields(resource);
+                    networkInterfaces = getListValue(fields,"networkInterfaces");
+                    privateIP = networkInterfaces.get(0).getStructValue().getFieldsMap().get("networkIP").getStringValue();
+
+                }
+            }
+            if (!privateIP.isEmpty()) {
+                for (Asset asset : response.getPage().getValues()) {
+                    Resource resource = getResource(asset);
+                    Map<String, Value> fields = getFields(resource);
+                    if (Objects.equals(getAssetType(asset), AssetMapping.SUBNETWORK) && asset.getName().split("projects")[1].equals(networkInterfaces.get(0).getStructValue().getFieldsMap().get("subnetwork").getStringValue().split("projects")[1])) {
+                        range = getStringValue(fields,"ipCidrRange");
+                    }
+                }
+            }
+
+            if (!range.isEmpty()){
+                for (Asset asset : response.getPage().getValues()){
+                    if (Objects.equals(getAssetType(asset), AssetMapping.CLOUD_SQL)) {
+                        Resource resource = getResource(asset);
+                        Map<String, Value> fields = getFields(resource);
+                        List<Value> ipAddresses = getListValue(fields,"ipAddresses");
+                        String privateIPSQL = "";
+                        if (ipAddresses.size() > 1){
+                            privateIPSQL = ipAddresses.get(1).getStructValue().getFieldsMap().get("ipAddress").getStringValue();
+                        }
+
+                        if (isIPInRange(privateIPSQL,range))
+                            ips.add(privateIPSQL);
+                    }
+
+                }
+            }
+        }
+        return ips;
+
+    }
+
+    public static boolean isIPInRange(String ipAddress, String cidrRange) throws UnknownHostException {
+        String[] parts = cidrRange.split("/");
+        String network = parts[0];
+        int prefixLength = Integer.parseInt(parts[1]);
+
+        long ip = ipToLong(InetAddress.getByName(ipAddress));
+        long networkIP = ipToLong(InetAddress.getByName(network));
+
+        long subnetMask = (0xFFFFFFFFL << (32 - prefixLength));
+
+        return (ip & subnetMask) == (networkIP & subnetMask);
+    }
+
+    private static long ipToLong(InetAddress ip) {
+        byte[] addr = ip.getAddress();
+        long result = 0;
+        for (byte b : addr) {
+            result = (result << 8) + (b & 0xFF);
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        try {
+            String ip = "192.168.1.254";
+            String cidr = "192.168.1.0/24";
+            boolean isInRange = isIPInRange(ip, cidr);
+            log.info("L'IP " + ip + " appartient au réseau " + cidr + ": " + isInRange);
+        } catch (UnknownHostException e) {
+            log.info("Erreur d'adresse IP ou de réseau : " + e.getMessage());
+        }
     }
 }

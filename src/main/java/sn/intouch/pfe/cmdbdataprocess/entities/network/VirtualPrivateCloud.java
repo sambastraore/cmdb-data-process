@@ -1,14 +1,14 @@
 package sn.intouch.pfe.cmdbdataprocess.entities.network;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class VirtualPrivateCloud {
     private String name;
     //private Map<String,String> firewallRules;

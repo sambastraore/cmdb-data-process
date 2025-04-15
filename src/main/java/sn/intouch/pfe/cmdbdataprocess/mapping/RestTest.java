@@ -26,7 +26,10 @@ public class RestTest {
 
           //  URL url = new URL("https://cloudasset.googleapis.com/v1/" + scope + "/assets?asset_types=" + assetType);
             URL url1 = new URL("https://compute.googleapis.com/compute/v1/projects/eme-iacc/global/backendServices/lb-wildfly-test-1");
-            HttpURLConnection connection = (HttpURLConnection) url1.openConnection();
+            URL url2 = new URL("https://cloudfunctions.googleapis.com/v2/projects/eme-iacc/locations/europe-west1/functions/balanceUpdateFunctionAndInsert");
+            URL url3 = new URL( "https://www.googleapis.com/compute/v1/projects/eme-iacc/zones/europe-west1-b/instances/instance-group-test-bgxf");
+            URL url4 = new URL("https://sqladmin.googleapis.com/sql/v1beta4/projects/eme-iacc/instances/eme-iacc");
+            HttpURLConnection connection = (HttpURLConnection) url3.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
             connection.setRequestProperty("Content-Type", "application/json");

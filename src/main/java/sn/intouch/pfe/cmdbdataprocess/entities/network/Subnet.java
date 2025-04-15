@@ -1,13 +1,14 @@
 package sn.intouch.pfe.cmdbdataprocess.entities.network;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Subnet {
+    private String name;
     private String range;
     private String region;
     private String purpose;

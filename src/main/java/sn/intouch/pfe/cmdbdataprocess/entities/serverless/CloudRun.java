@@ -1,13 +1,13 @@
 package sn.intouch.pfe.cmdbdataprocess.entities.serverless;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import sn.intouch.pfe.cmdbdataprocess.entities.nat.NAT;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CloudRun {
     private String name;
     private String region;

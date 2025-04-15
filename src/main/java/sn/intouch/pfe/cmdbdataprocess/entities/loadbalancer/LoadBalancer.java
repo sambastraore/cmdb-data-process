@@ -1,8 +1,6 @@
 package sn.intouch.pfe.cmdbdataprocess.entities.loadbalancer;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +8,8 @@ import java.util.Map;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoadBalancer {
     private String name;
     private String region;
