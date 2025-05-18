@@ -6,14 +6,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MySQL {
-    private Integer numberOfConnections;
-    private Integer numberOfThreads;
-    private String logsExpirations;
-    private String version;
-    private Integer port;
-    private Integer activeConnections;
-
-    //retrieve all information in the .conf file and eventually add fields
+    private String name;
+    private String port;
+    private String socket;
+    private String datadir;
+    private String slowQueryLogFile;
+    private String maxConnections;
+    private String maxUserConnections;
+    private String threadCacheSize;
+    private String readBufferSize;
+    private String maxAllowedPacket;
 
     //relationship
     private String VMName;

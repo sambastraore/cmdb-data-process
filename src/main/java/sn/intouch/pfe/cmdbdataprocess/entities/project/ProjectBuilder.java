@@ -22,7 +22,7 @@ public class ProjectBuilder {
             Map<String, Value> fields = MappingEngine.getFields(resource);
             Map<String, Value> struct = MappingEngine.getStructValue(fields,"parent");
             String idProject = MappingEngine.getStringValue(struct,"id");
-            String projectName = MappingEngine.getStringValue(fields,"name");
+            String projectName = MappingEngine.getStringValue(fields,"name").toLowerCase();
 
             String url = Config.baseUrl + "classes/Project/cards";
             String body = "{"
@@ -30,7 +30,7 @@ public class ProjectBuilder {
                     + "\"projectName\": \"" + projectName + "\""
                     + "}";
 
-            Integer cardId = HttpUtil.getCardId("Project","projectId",idProject);
+            Integer cardId = HttpUtil.getCardId("Project","projectName",projectName);
 
             HttpUtil.saveOrUpdate(idProject,url,body,cardId);
             return Project.builder()

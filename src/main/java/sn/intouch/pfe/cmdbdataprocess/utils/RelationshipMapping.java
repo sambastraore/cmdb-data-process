@@ -28,6 +28,21 @@ public class RelationshipMapping {
 
     public static final String VM_FOR_DISK = "Map_disk_for_vms";
 
+    public static final String SUBNET_FOR_VM = "Map_subnet_for_vms";
+
+    public static final String APACHE_FOR_VM = "Map_apache_for_vm";
+    public static final String MYSQL_FOR_VM = "Map_mysql_for_vm";
+    public static final String WILDFLY_FOR_VM = "Map_wildfly_for_vm";
+    public static final String APACHE_FOR_WILDFLY = "Map_apache_for_wildfly";
+    public static String WILDFLY_FOR_MYSQL = "Map_wildfly_for_mysql";
+    public static final String WILDFLY_FOR_CLOUDSQL = "Map_wildfly_for_cloudsql";
+
+    public static final String VHOST_FOR_APACHE = "Map_vhost_for_apache";
+
+    public static final String VHOST_FOR_WILDFLY = "Map_wildfly_for_vhost";
+
+
+
 
 
 

@@ -43,25 +43,25 @@ public class GCPTestv1 {
         //String projectId = "dev-top20";
         String[] assetTypes = {
                 //AssetMapping.IP_ADDRESSES,
-                AssetMapping.DISK,
+                //AssetMapping.DISK,
                 //AssetMapping.FORWARDING_RULE,
-                AssetMapping.CLOUD_RUN_EXECUTION,
-                AssetMapping.VPC,
-                AssetMapping.CLOUD_SQL,
-                AssetMapping.VM_INSTANCE,
-                AssetMapping.PROJECT,
-                AssetMapping.SUBNETWORK,
+                //AssetMapping.CLOUD_RUN_EXECUTION,
+                //AssetMapping.VPC,
+                //AssetMapping.CLOUD_SQL,
+                //AssetMapping.VM_INSTANCE,
+                //AssetMapping.PROJECT,
+                //AssetMapping.SUBNETWORK,
                 //AssetMapping.VM_IMAGE,
                 //AssetMapping.TARGET_HTTPS_PROXY,
-                AssetMapping.CLOUD_FUNCTION,
+                //AssetMapping.CLOUD_FUNCTION,
                 //AssetMapping.BACKEND_SERVICE,
                 //AssetMapping.APP_ENGINE_APPLICATION,
                 //AssetMapping.ClOUD_SQL_BACKUP,
                 //AssetMapping.TARGET_HTTP_PROXY,
-                //AssetMapping.INSTANCE_TEMPLATE,
+                AssetMapping.INSTANCE_TEMPLATE,
                 //AssetMapping.ROUTER,
-                AssetMapping.URLMAP,
-                AssetMapping.INSTANCE_GROUP,
+                //AssetMapping.URLMAP,
+                //AssetMapping.INSTANCE_GROUP,
                 //AssetMapping.VPN_GATEWAY,
                 //AssetMapping.VPN_TUNNEL
         };
@@ -215,7 +215,7 @@ public class GCPTestv1 {
             //List<Value> list = fields1.get("disks").getListValue().getValuesList();
             //String test = list.get(0).getStructValue().getFieldsMap();
             //System.out.println(list.get(0).getStructValue().getFieldsMap().get("architecture"));
-            //System.out.println(resource.getData().getFieldsMap());
+            System.out.println(resource.getData().getFieldsMap());
             //System.out.println(asset.getAllFields());
             System.out.println("-------------------------------------------------");
         }
@@ -245,6 +245,7 @@ public class GCPTestv1 {
                         VirtualMachine vm = (VirtualMachine) asset;
                         VMRelation.updateDiskRelation(vm);
                         VMRelation.updateInstanceGroupRelation(vm);
+                        VMRelation.updateSubnetRelation(vm);
                         break;
                     case AssetMapping.CLOUD_RUN_EXECUTION:
                         CloudRun cloudRun = (CloudRun) asset;

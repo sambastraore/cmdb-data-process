@@ -32,6 +32,8 @@ public class LoadBalancerBuilder {
             String description = MappingEngine.getStringValue(fields,"description");
             String body = "{"
                     + "\"name\": \"" + name + "\","
+                    + "\"backends\": \"" + backends + "\","
+                    + "\"targetProxies\": \"" + frontends + "\","
                     + "\"region\": \"" + location + "\""
                     + "}";
 

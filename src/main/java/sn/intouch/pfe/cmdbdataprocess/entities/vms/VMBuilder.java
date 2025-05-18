@@ -46,6 +46,7 @@ public class VMBuilder {
                     + "\"machineType\": \"" + machineType + "\","
                     + "\"privateIP\": \"" + privateIP + "\","
                     + "\"status\": \"" + status + "\","
+                    + "\"sqlInstancesIPs\": \"" + sqlInstancesIPs + "\","
                     + "\"natIP\": \"" + natIP + "\""
                     + "}";
 

@@ -57,6 +57,8 @@ public class CloudSQLBuilder {
                     + "\"databaseVersion\": \"" + databaseVersion + "\","
                     + "\"backup\": " + backup + ","
                     + "\"replication\": \"" + replica + "\","
+                    + "\"IPAddress\": \"" + ipAddress + "\","
+                    + "\"characteristics\": \"" + characteristics + "\","
                     + "\"privateIP\": \"" + privateIP + "\""
                     + "}";
 

@@ -9,13 +9,10 @@ import java.util.Map;
 @Getter
 @Setter
 public class Wildfly {
-    private List<Map<String,String>> datasources;
-    private String version;
-    private Integer port;
-    private List<String> apps;
-    //io
-    //jca
-    //jvmConfig
+    private String name;
+    private String datasources;
+    private String deployments;
+    private String subsystems;
 
     //relationship
     private String VMName;
