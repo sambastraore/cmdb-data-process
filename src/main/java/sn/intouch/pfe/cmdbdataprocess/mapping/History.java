@@ -4,17 +4,15 @@ package sn.intouch.pfe.cmdbdataprocess.mapping;
 
 import com.google.cloud.asset.v1.*;
 import com.google.protobuf.Timestamp;
-import sn.intouch.pfe.cmdbdataprocess.utils.AssetMapping;
 import sn.intouch.pfe.cmdbdataprocess.utils.CloudAssetAuthUtil;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class HistoryTest {
+public class History {
 
     // Use the default project Id.
     private static final String projectId = "eme-iacc";
@@ -62,6 +60,6 @@ public class HistoryTest {
                     return true;
             }
         }
-        return true;
+        return false;
     }
 }

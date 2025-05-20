@@ -1,9 +1,11 @@
-package sn.intouch.pfe.cmdbdataprocess.mapping;
+package sn.intouch.pfe.cmdbdataprocess.services;
 
 import com.google.cloud.asset.v1.*;
-import com.google.protobuf.Descriptors;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import sn.intouch.pfe.cmdbdataprocess.entities.apache.ApacheRelation;
 import sn.intouch.pfe.cmdbdataprocess.entities.cloudsql.CloudSQL;
 import sn.intouch.pfe.cmdbdataprocess.entities.cloudsql.CloudSQLBuilder;
 import sn.intouch.pfe.cmdbdataprocess.entities.cloudsql.CloudSQLRelation;
@@ -11,20 +13,24 @@ import sn.intouch.pfe.cmdbdataprocess.entities.disk.Disk;
 import sn.intouch.pfe.cmdbdataprocess.entities.disk.DiskBuilder;
 import sn.intouch.pfe.cmdbdataprocess.entities.loadbalancer.LoadBalancer;
 import sn.intouch.pfe.cmdbdataprocess.entities.loadbalancer.LoadBalancerBuilder;
+import sn.intouch.pfe.cmdbdataprocess.entities.mysql.MySQLRelation;
 import sn.intouch.pfe.cmdbdataprocess.entities.network.*;
 import sn.intouch.pfe.cmdbdataprocess.entities.project.Project;
 import sn.intouch.pfe.cmdbdataprocess.entities.project.ProjectBuilder;
 import sn.intouch.pfe.cmdbdataprocess.entities.serverless.*;
 import sn.intouch.pfe.cmdbdataprocess.entities.vms.*;
-import sn.intouch.pfe.cmdbdataprocess.utils.CloudAssetAuthUtil;
+import sn.intouch.pfe.cmdbdataprocess.entities.wildfly.WildflyRelation;
+import sn.intouch.pfe.cmdbdataprocess.mapping.MappingEngine;
 import sn.intouch.pfe.cmdbdataprocess.utils.AssetMapping;
+import sn.intouch.pfe.cmdbdataprocess.utils.CloudAssetAuthUtil;
+import sn.intouch.pfe.cmdbdataprocess.utils.HttpUtil;
 
 import java.io.IOException;
 import java.util.*;
 
+@Service
 @Log4j2
-public class GCPTestv1 {
-
+public class CmdbService {
     static List<CloudFunction> cloudFunctions = new ArrayList<>();
     static List<Disk> disks = new ArrayList<>();
     static List<Subnet> subnets = new ArrayList<>();
@@ -35,77 +41,52 @@ public class GCPTestv1 {
     static List<InstanceGroup> instanceGroups = new ArrayList<>();
     static List<CloudSQL> cloudSQLs = new ArrayList<>();
     static List<CloudRun> cloudRuns = new ArrayList<>();
+
     static Map<String, List<?>> assetsByType = new HashMap<>();
 
 
-    public static void listAssets() throws IOException, IllegalArgumentException {
-        String projectId = "eme-iacc";
-        //String projectId = "dev-top20";
-        String[] assetTypes = {
-                //AssetMapping.IP_ADDRESSES,
-                //AssetMapping.DISK,
-                //AssetMapping.FORWARDING_RULE,
-                //AssetMapping.CLOUD_RUN_EXECUTION,
-                //AssetMapping.VPC,
-                //AssetMapping.CLOUD_SQL,
-                //AssetMapping.VM_INSTANCE,
-                //AssetMapping.PROJECT,
-                //AssetMapping.SUBNETWORK,
-                //AssetMapping.VM_IMAGE,
-                //AssetMapping.TARGET_HTTPS_PROXY,
-                //AssetMapping.CLOUD_FUNCTION,
-                //AssetMapping.BACKEND_SERVICE,
-                //AssetMapping.APP_ENGINE_APPLICATION,
-                //AssetMapping.ClOUD_SQL_BACKUP,
-                //AssetMapping.TARGET_HTTP_PROXY,
-                AssetMapping.INSTANCE_TEMPLATE,
-                //AssetMapping.ROUTER,
-                //AssetMapping.URLMAP,
-                //AssetMapping.INSTANCE_GROUP,
-                //AssetMapping.VPN_GATEWAY,
-                //AssetMapping.VPN_TUNNEL
-        };
-        ContentType contentType = ContentType.RESOURCE;
-        listAssets(projectId, assetTypes, contentType);
-    }
 
-    public static void listAssets(String projectId, String[] assetTypes, ContentType contentType)
+    @Async
+    public void listAssets(String[] projectIds, String[] assetTypes, ContentType contentType)
             throws IOException, IllegalArgumentException {
         try (AssetServiceClient client = CloudAssetAuthUtil.getAssetServiceClient()) {
-            ProjectName parent = ProjectName.of(projectId);
+            for (String idProject : projectIds){
+                ProjectName parent = ProjectName.of(idProject);
 
-            ListAssetsRequest request =
-                    ListAssetsRequest.newBuilder()
-                            .setParent(parent.toString())
-                            .addAllAssetTypes(Arrays.asList(assetTypes))
-                            .setContentType(contentType)
-                            .setPageSize(10)
+                ListAssetsRequest request =
+                        ListAssetsRequest.newBuilder()
+                                .setParent(parent.toString())
+                                .addAllAssetTypes(Arrays.asList(assetTypes))
+                                .setContentType(contentType)
+                                .setPageSize(30)
 
-                            .build();
-            AssetServiceClient.ListAssetsPagedResponse response = client.listAssets(request);
-            responseProcessing(response,projectId);
+                                .build();
+                AssetServiceClient.ListAssetsPagedResponse response = client.listAssets(request);
+                responseProcessing(response,idProject);
 
-            while (!response.getNextPageToken().isEmpty()) {
-                request = request.toBuilder().setPageToken(response.getNextPageToken()).build();
-                response = client.listAssets(request);
-                responseProcessing(response,projectId);
+                while (!response.getNextPageToken().isEmpty()) {
+                    request = request.toBuilder().setPageToken(response.getNextPageToken()).build();
+                    response = client.listAssets(request);
+                    responseProcessing(response,idProject);
+                }
+
+
             }
 
             relationProcessing(assetsByType);
-            } catch (InterruptedException | JSONException e) {
+            vmResourcesRelationProcessing();
+        } catch (InterruptedException | JSONException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        listAssets();
-    }
+
 
     private static void responseProcessing(AssetServiceClient.ListAssetsPagedResponse response, String projectId) throws InterruptedException, IOException, JSONException {
         for (Asset asset : response.getPage().getValues()) {
             String type = MappingEngine.getAssetType(asset);
             log.info("type : " + type);
-           switch (type){
+            switch (type){
                 case AssetMapping.CLOUD_FUNCTION:
                     CloudFunction cloudFunction = CloudFunctionBuilder.cloudFunctionBuilder(asset,projectId);
                     cloudFunctions.add(cloudFunction);
@@ -169,7 +150,6 @@ public class GCPTestv1 {
                     log.info("subnet : " + (virtualMachine != null ? virtualMachine.getSubnet():""));
                     log.info("Disk : " + (virtualMachine != null ? virtualMachine.getDiskName():""));
                     log.info("IG : " + (virtualMachine != null ? virtualMachine.getInstanceGroupName():""));
-                    log.info("potentialSqlInstances : " + (virtualMachine != null ? virtualMachine.getSameSubnetSQLInstances().size():""));
                     break;
                 case AssetMapping.INSTANCE_GROUP:
                     InstanceGroup instanceGroup = InstanceGroupBuilder.instanceGroupBuilder(asset,projectId);
@@ -209,15 +189,15 @@ public class GCPTestv1 {
                 default:
                     log.info("not processed asset");
             }
-            Map< Descriptors.FieldDescriptor,Object> fields = asset.getAllFields();
-            Resource resource = (Resource) fields.get(Asset.getDescriptor().findFieldByName("resource"));
+            //Map< Descriptors.FieldDescriptor,Object> fields = asset.getAllFields();
+            //Resource resource = (Resource) fields.get(Asset.getDescriptor().findFieldByName("resource"));
             //Map<String, Value> fields1 = resource.getData().getFieldsMap();
             //List<Value> list = fields1.get("disks").getListValue().getValuesList();
             //String test = list.get(0).getStructValue().getFieldsMap();
             //System.out.println(list.get(0).getStructValue().getFieldsMap().get("architecture"));
-            System.out.println(resource.getData().getFieldsMap());
+            //System.out.println(resource.getData().getFieldsMap());
             //System.out.println(asset.getAllFields());
-            System.out.println("-------------------------------------------------");
+            //System.out.println("-------------------------------------------------");
         }
         assetsByType.put(AssetMapping.CLOUD_FUNCTION, cloudFunctions);
         assetsByType.put(AssetMapping.DISK, disks);
@@ -240,38 +220,62 @@ public class GCPTestv1 {
             log.info("Adding relations by type : " + assetType);
 
             for (Object asset : assets) {
-                switch (assetType) {
-                    case AssetMapping.VM_INSTANCE :
-                        VirtualMachine vm = (VirtualMachine) asset;
-                        VMRelation.updateDiskRelation(vm);
-                        VMRelation.updateInstanceGroupRelation(vm);
-                        VMRelation.updateSubnetRelation(vm);
-                        break;
-                    case AssetMapping.CLOUD_RUN_EXECUTION:
-                        CloudRun cloudRun = (CloudRun) asset;
-                        CloudRunRelation.updateCloudRunRelation(cloudRun);
-                        break;
-                    case AssetMapping.CLOUD_SQL:
-                        CloudSQL cloudSQL = (CloudSQL) asset;
-                        CloudSQLRelation.updateCloudSQLRelation(cloudSQL);
-                        break;
-                    case AssetMapping.SUBNETWORK:
-                        Subnet subnet = (Subnet) asset;
-                        SubnetRelation.updateSubnetRelation(subnet);
-                        break;
-                    case AssetMapping.VPC:
-                        VirtualPrivateCloud vpc = (VirtualPrivateCloud) asset;
-                        VPCRelation.updateProjectRelation(vpc);
-                        break;
-                    case AssetMapping.INSTANCE_GROUP:
-                        InstanceGroup instanceGroup = (InstanceGroup) asset;
-                        InstanceGroupRelation.updateInstanceGroupRelationForVPC(instanceGroup);
-                        InstanceGroupRelation.updateInstanceGroupRelationForSubnet(instanceGroup);
-                        break;
-                    default:
-                        log.info("this is a default treatment");
-               }
-           }
+                if (asset != null){
+                    switch (assetType) {
+                        case AssetMapping.VM_INSTANCE :
+                            VirtualMachine vm = (VirtualMachine) asset;
+                            VMRelation.updateDiskRelation(vm);
+                            VMRelation.updateInstanceGroupRelation(vm);
+                            VMRelation.updateSubnetRelation(vm);
+                            break;
+                        case AssetMapping.CLOUD_RUN_EXECUTION:
+                            CloudRun cloudRun = (CloudRun) asset;
+                            CloudRunRelation.updateCloudRunRelation(cloudRun);
+                            break;
+                        case AssetMapping.CLOUD_SQL:
+                            CloudSQL cloudSQL = (CloudSQL) asset;
+                            CloudSQLRelation.updateCloudSQLRelation(cloudSQL);
+                            break;
+                        case AssetMapping.SUBNETWORK:
+                            Subnet subnet = (Subnet) asset;
+                            SubnetRelation.updateSubnetRelation(subnet);
+                            break;
+                        case AssetMapping.VPC:
+                            VirtualPrivateCloud vpc = (VirtualPrivateCloud) asset;
+                            VPCRelation.updateProjectRelation(vpc);
+                            break;
+                        case AssetMapping.INSTANCE_GROUP:
+                            InstanceGroup instanceGroup = (InstanceGroup) asset;
+                            InstanceGroupRelation.updateInstanceGroupRelationForVPC(instanceGroup);
+                            InstanceGroupRelation.updateInstanceGroupRelationForSubnet(instanceGroup);
+                            break;
+                        default:
+                            log.info("this is a default treatment");
+                    }
+                }
+
+            }
+        }
     }
+
+    private static void vmResourcesRelationProcessing () throws JSONException, IOException {
+        List<String> apacheNames = HttpUtil.getNames("Apache");
+        List<String> wildflyNames = HttpUtil.getNames("Wildfly");
+        List<String> mysqlNames = HttpUtil.getNames("MySQL");
+
+        assert apacheNames != null;
+        for (String name : apacheNames){
+            ApacheRelation.updateApacheRelation(name);
+        }
+
+        assert wildflyNames != null;
+        for (String name : wildflyNames){
+            WildflyRelation.updateWildflyRelation(name);
+        }
+
+        assert mysqlNames != null;
+        for (String name : mysqlNames){
+            MySQLRelation.updateMySQLRelation(name);
+        }
     }
 }

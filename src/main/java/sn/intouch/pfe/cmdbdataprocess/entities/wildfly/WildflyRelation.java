@@ -18,8 +18,8 @@ public class WildflyRelation {
         //String subsystems = Objects.requireNonNull(HttpUtil.getCard("Wildfly", nameValue)).getString("subsystems");
 
         //wildfly for vm relation
-        Integer relationId = HttpUtil.getRelationId(RelationshipMapping.WILDFLY_FOR_VM.split("Map_")[1],"VirtualMachine","name",nameValue.split("_")[1],"Wildfly","name",nameValue);
-        HttpUtil.saveOrUpdateRelation(RelationshipMapping.WILDFLY_FOR_VM.split("Map_")[1],relationId,HttpUtil.getCardId("Wildfly","name",nameValue),"Wildfly",HttpUtil.getCardId("VirtualMachine","name",nameValue.split("_")[1]),"VirtualMachine");
+        Integer relationId = HttpUtil.getRelationId(RelationshipMapping.WILDFLY_FOR_VM.split("Map_")[1],"VirtualMachine","name",nameValue.split("_").length>1 ? nameValue.split("_")[1] : "","Wildfly","name",nameValue);
+        HttpUtil.saveOrUpdateRelation(RelationshipMapping.WILDFLY_FOR_VM.split("Map_")[1],relationId,HttpUtil.getCardId("Wildfly","name",nameValue),"Wildfly",HttpUtil.getCardId("VirtualMachine","name",nameValue.split("_").length>1 ? nameValue.split("_")[1] : ""),"VirtualMachine");
 
         // mysql or cloudsql for wildfly relation
         String [] urls = HttpUtil.getDatasourceUrl(datasources);
@@ -31,8 +31,8 @@ public class WildflyRelation {
             String CloudSQLName = HttpUtil.getCloudSQLFromIP(ip);
             String mySQLPort = HttpUtil.getPortFromMySQL("mysql_" + VMName);
             if (Objects.equals(ip, "127.0.0.1") || Objects.equals(ip, "localhost")) {
-                Integer relationId1 = HttpUtil.getRelationId(RelationshipMapping.WILDFLY_FOR_MYSQL.split("Map_")[1], "Wildfly", "name", nameValue, "MySQL", "name", "mysql_" + nameValue.split("_")[1]);
-                HttpUtil.saveOrUpdateRelation(RelationshipMapping.WILDFLY_FOR_MYSQL.split("Map_")[1], relationId1, HttpUtil.getCardId("MySQL", "name", "mysql_" + nameValue.split("_")[1]), "MySQL", HttpUtil.getCardId("Wildfly", "name", nameValue), "Wildfly");
+                Integer relationId1 = HttpUtil.getRelationId(RelationshipMapping.WILDFLY_FOR_MYSQL.split("Map_")[1], "Wildfly", "name", nameValue, "MySQL", "name", "mysql_" + (nameValue.split("_").length>1 ? nameValue.split("_")[1] : ""));
+                HttpUtil.saveOrUpdateRelation(RelationshipMapping.WILDFLY_FOR_MYSQL.split("Map_")[1], relationId1, HttpUtil.getCardId("MySQL", "name", "mysql_" + (nameValue.split("_").length>1 ? nameValue.split("_")[1] : "")), "MySQL", HttpUtil.getCardId("Wildfly", "name", nameValue), "Wildfly");
             } else if (VMName != null && Objects.equals(mySQLPort, port)) {
                 Integer relationId1 = HttpUtil.getRelationId(RelationshipMapping.WILDFLY_FOR_MYSQL.split("Map_")[1], "Wildfly", "name", nameValue, "MySQL", "name", "mysql_" + VMName);
                 HttpUtil.saveOrUpdateRelation(RelationshipMapping.WILDFLY_FOR_MYSQL.split("Map_")[1], relationId1, HttpUtil.getCardId("MySQL", "name", "mysql_" + VMName), "MySQL", HttpUtil.getCardId("Wildfly", "name", nameValue), "Wildfly");

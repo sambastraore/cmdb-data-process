@@ -8,6 +8,7 @@ import java.io.IOException;
 
 public class CloudRunRelation {
     public static void updateCloudRunRelation (CloudRun cloudRun) throws JSONException, IOException {
+        HttpUtil.deleteRelation(RelationshipMapping.CLOUDRUN_CLOUDSQL_RELATION.split("Map_")[1],"CloudSQL","name",cloudRun.getCloudSQLInstance(),"CloudRun","name",cloudRun.getName());
         Integer relationId = HttpUtil.getRelationId(RelationshipMapping.CLOUDRUN_CLOUDSQL_RELATION.split("Map_")[1],"CloudSQL","name",cloudRun.getCloudSQLInstance(),"CloudRun","name",cloudRun.getName());
         HttpUtil.saveOrUpdateRelation(RelationshipMapping.CLOUDRUN_CLOUDSQL_RELATION.split("Map_")[1],relationId,HttpUtil.getCardId("CloudRun","name",cloudRun.getName()),"CloudRun",HttpUtil.getCardId("CloudSQL","name",cloudRun.getCloudSQLInstance()),"CloudSQL");
     }

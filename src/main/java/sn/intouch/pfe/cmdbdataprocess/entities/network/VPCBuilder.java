@@ -4,7 +4,7 @@ import com.google.cloud.asset.v1.Asset;
 import com.google.cloud.asset.v1.Resource;
 import com.google.protobuf.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
-import sn.intouch.pfe.cmdbdataprocess.mapping.HistoryTest;
+import sn.intouch.pfe.cmdbdataprocess.mapping.History;
 import sn.intouch.pfe.cmdbdataprocess.mapping.MappingEngine;
 import sn.intouch.pfe.cmdbdataprocess.utils.Config;
 import sn.intouch.pfe.cmdbdataprocess.utils.HttpUtil;
@@ -17,7 +17,7 @@ public class VPCBuilder {
     public static VirtualPrivateCloud vpcBuilder (Asset asset, String projectId) throws IOException, JSONException {
         String name = MappingEngine.getName(asset);
         String[] assetNames = {name};
-        if (HistoryTest.toUpdate(projectId, List.of(assetNames))){
+        if (History.toUpdate(projectId, List.of(assetNames))){
             String realName = MappingEngine.getRealValue(name);
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);

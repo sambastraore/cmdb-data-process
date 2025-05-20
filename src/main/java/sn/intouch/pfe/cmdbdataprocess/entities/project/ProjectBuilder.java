@@ -4,7 +4,7 @@ import com.google.cloud.asset.v1.Asset;
 import com.google.cloud.asset.v1.Resource;
 import com.google.protobuf.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
-import sn.intouch.pfe.cmdbdataprocess.mapping.HistoryTest;
+import sn.intouch.pfe.cmdbdataprocess.mapping.History;
 import sn.intouch.pfe.cmdbdataprocess.mapping.MappingEngine;
 import sn.intouch.pfe.cmdbdataprocess.utils.Config;
 import sn.intouch.pfe.cmdbdataprocess.utils.HttpUtil;
@@ -17,7 +17,7 @@ public class ProjectBuilder {
 
     public static Project projectBuilder (Asset asset, String projectId) throws IOException, JSONException {
         String[] assetNames = {asset.getName()};
-        if (HistoryTest.toUpdate(projectId, List.of(assetNames))){
+        if (History.toUpdate(projectId, List.of(assetNames))){
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);
             Map<String, Value> struct = MappingEngine.getStructValue(fields,"parent");

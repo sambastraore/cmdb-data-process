@@ -18,8 +18,8 @@ public class ApacheRelation {
         //String vhosts = Objects.requireNonNull(HttpUtil.getCard("Apache", nameValue)).getString("vhosts");
 
         //apache for vm relation
-        Integer relationId = HttpUtil.getRelationId(RelationshipMapping.APACHE_FOR_VM.split("Map_")[1],"VirtualMachine","name",nameValue.split("_")[1],"Apache","name",nameValue);
-        HttpUtil.saveOrUpdateRelation(RelationshipMapping.APACHE_FOR_VM.split("Map_")[1],relationId,HttpUtil.getCardId("Apache","name",nameValue),"Apache",HttpUtil.getCardId("VirtualMachine","name",nameValue.split("_")[1]),"VirtualMachine");
+        Integer relationId = HttpUtil.getRelationId(RelationshipMapping.APACHE_FOR_VM.split("Map_")[1],"VirtualMachine","name",nameValue.split("_").length>1 ? nameValue.split("_")[1] : "","Apache","name",nameValue);
+        HttpUtil.saveOrUpdateRelation(RelationshipMapping.APACHE_FOR_VM.split("Map_")[1],relationId,HttpUtil.getCardId("Apache","name",nameValue),"Apache",HttpUtil.getCardId("VirtualMachine","name",nameValue.split("_").length>1 ? nameValue.split("_")[1] : ""),"VirtualMachine");
     }
 
     public static void main(String[] args) throws JSONException, IOException {

@@ -176,7 +176,7 @@ public class HttpUtil {
             JSONArray data = getTheResponse(connection);
             for (int i = 0; i < data.length(); i++) {
                 JSONObject relation = data.getJSONObject(i);
-                if (Objects.equals(relation.getString("_type"), theDomain) && Objects.equals(relation.getInt("_destinationId"),getCardId(destClass,destAttribute,destValue))){
+                if (Objects.equals(relation.getString("_type"), theDomain) && Objects.equals(relation.getInt("_destinationId"), getCardId(destClass, destAttribute, destValue))) {
                     return relation.getInt("_id");
                 }
             }
@@ -184,6 +184,35 @@ public class HttpUtil {
             log.error("error code while getting relation id " + theDomain + " : " + responseCode);
         }
         return null;
+    }
+
+    public static void deleteRelation (String theDomain, String destClass, String destAttribute, String destValue, String sourceClass, String sourceAttribute, String sourceValue) throws JSONException, IOException {
+            log.info("checking if there is a relation to delete...");
+        String url = Config.baseUrl + "classes/" + sourceClass + "/cards/" + getCardId(sourceClass,sourceAttribute,sourceValue) + "/relations";
+        log.info("the url : " + url);
+        HttpURLConnection connection = getHttpURLConnection(url,null,getToken(),"GET");
+        int responseCode = connection.getResponseCode();
+        if (responseCode >= 200 && responseCode<300){
+            log.info("response code while getting relations of " + sourceClass + " : " + responseCode);
+            JSONArray data = getTheResponse(connection);
+            log.info("the data : " + data);
+            for (int i = 0; i < data.length(); i++) {
+                JSONObject relation = data.getJSONObject(i);
+                if (Objects.equals(relation.getString("_type"), theDomain) && relation.getInt("_destinationId") != getCardId(destClass, destAttribute, destValue)) {
+                    url += "/" + relation.getInt("_id");
+                    HttpURLConnection connectionDelete = getHttpURLConnection(url, null, getToken(), "DELETE");
+                    int responseCode1 = connectionDelete.getResponseCode();
+                    if (responseCode1 >= 200 && responseCode1 < 300) {
+                        log.info("purge of relation successful");
+                    }
+                }else {
+                    log.info("not a relation to purge");
+                }
+
+            }
+        }
+
+
     }
 
     private static JSONArray getTheResponse(HttpURLConnection connection) throws IOException, JSONException {
@@ -217,18 +246,23 @@ public class HttpUtil {
             int responseCode = connection.getResponseCode();
             if (responseCode >= 200 && responseCode < 300)
                 log.info("saving successful");
-            else
+            else{
                 log.info("saving failed : " + responseCode);
+                //fail because of destination id null
+
+            }
 
         } else{
             url = Config.baseUrl + "classes/" + sourceType + "/cards/" + sourceId + "/relations/" + relationId;
             log.info("updating : " + relationType );
             HttpURLConnection connection = getHttpURLConnection(url,body,getToken(),"PUT");
             int responseCode = connection.getResponseCode();
-            if (responseCode >= 200 && responseCode < 300)
+            if (responseCode >= 200 && responseCode < 300){
                 log.info("updating successful");
-            else
+            }
+            else{
                 log.info("updating failed");
+            }
         }
 
     }

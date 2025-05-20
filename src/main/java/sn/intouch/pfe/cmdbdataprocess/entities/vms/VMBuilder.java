@@ -4,7 +4,7 @@ import com.google.cloud.asset.v1.Asset;
 import com.google.cloud.asset.v1.Resource;
 import com.google.protobuf.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
-import sn.intouch.pfe.cmdbdataprocess.mapping.HistoryTest;
+import sn.intouch.pfe.cmdbdataprocess.mapping.History;
 import sn.intouch.pfe.cmdbdataprocess.mapping.MappingEngine;
 import sn.intouch.pfe.cmdbdataprocess.utils.Config;
 import sn.intouch.pfe.cmdbdataprocess.utils.HttpUtil;
@@ -20,7 +20,7 @@ public class VMBuilder {
         assetNames.add(name);
         if (!Objects.equals("",instanceGroupName))
             assetNames.add(instanceGroupName);
-        if (HistoryTest.toUpdate(projectId,assetNames)){
+        if (History.toUpdate(projectId,assetNames)){
             name = MappingEngine.getRealValue(name);
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);
@@ -30,14 +30,15 @@ public class VMBuilder {
             machineType = MappingEngine.getRealValue(machineType);
             List<Value> networkInterfaces = MappingEngine.getListValue(fields,"networkInterfaces");
             List<Value> accessConfigs = networkInterfaces.get(0).getStructValue().getFieldsMap().get("accessConfigs") !=null ? networkInterfaces.get(0).getStructValue().getFieldsMap().get("accessConfigs").getListValue().getValuesList() : Collections.emptyList();
-            String natIP = !accessConfigs.isEmpty() ? accessConfigs.get(0).getStructValue().getFieldsMap().get("natIP").getStringValue() : "";
+            Map<String,Value> fieldsMap = !accessConfigs.isEmpty() ? accessConfigs.get(0).getStructValue().getFieldsMap():null;
+            Value natValue = fieldsMap != null ? fieldsMap.get("natIP") : null;
+            String natIP = natValue != null ? natValue.getStringValue() : "";
             String privateIP = networkInterfaces.get(0).getStructValue().getFieldsMap().get("networkIP").getStringValue();
             String subnet = networkInterfaces.get(0).getStructValue().getFieldsMap().get("subnetwork").getStringValue();
             String status = MappingEngine.getStringValue(fields,"status");
             List<Value> disks = MappingEngine.getListValue(fields,"disks");
             String disk = disks.get(0).getStructValue().getFieldsMap().get("source").getStringValue();
             disk = MappingEngine.getRealValue(disk);
-            Set<String> sqlInstancesIPs = MappingEngine.sameSubnetSQLInstancesForVM(projectId,asset);
 
             String url = Config.baseUrl + "classes/VirtualMachine/cards";
             String body = "{"
@@ -46,7 +47,6 @@ public class VMBuilder {
                     + "\"machineType\": \"" + machineType + "\","
                     + "\"privateIP\": \"" + privateIP + "\","
                     + "\"status\": \"" + status + "\","
-                    + "\"sqlInstancesIPs\": \"" + sqlInstancesIPs + "\","
                     + "\"natIP\": \"" + natIP + "\""
                     + "}";
 
@@ -64,9 +64,12 @@ public class VMBuilder {
                     .subnet(subnet)
                     .diskName(disk)
                     .instanceGroupName(instanceGroupName)
-                    .sameSubnetSQLInstances(sqlInstancesIPs)
                     .build();
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+
     }
 }

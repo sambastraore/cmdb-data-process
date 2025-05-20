@@ -24,8 +24,8 @@ public class MySQLRelation {
 
 
         //mysql for vm relation
-        Integer relationId = HttpUtil.getRelationId(RelationshipMapping.MYSQL_FOR_VM.split("Map_")[1],"VirtualMachine","name",nameValue.split("_")[1],"MySQL","name",nameValue);
-        HttpUtil.saveOrUpdateRelation(RelationshipMapping.MYSQL_FOR_VM.split("Map_")[1],relationId,HttpUtil.getCardId("MySQL","name",nameValue),"MySQL",HttpUtil.getCardId("VirtualMachine","name",nameValue.split("_")[1]),"VirtualMachine");
+        Integer relationId = HttpUtil.getRelationId(RelationshipMapping.MYSQL_FOR_VM.split("Map_")[1],"VirtualMachine","name",nameValue.split("_").length>1 ? nameValue.split("_")[1] : "","MySQL","name",nameValue);
+        HttpUtil.saveOrUpdateRelation(RelationshipMapping.MYSQL_FOR_VM.split("Map_")[1],relationId,HttpUtil.getCardId("MySQL","name",nameValue),"MySQL",HttpUtil.getCardId("VirtualMachine","name",nameValue.split("_").length>1 ? nameValue.split("_")[1] : ""),"VirtualMachine");
     }
 
     public static void main(String[] args) throws JSONException, IOException {
