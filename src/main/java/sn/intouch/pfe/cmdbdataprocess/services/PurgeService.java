@@ -1,6 +1,7 @@
 package sn.intouch.pfe.cmdbdataprocess.services;
 
 import com.google.cloud.asset.v1.*;
+import com.google.protobuf.Value;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
@@ -66,8 +67,14 @@ public class PurgeService {
         Map<String, List<String>> assetsByType = new HashMap<>();
         List<Asset> assetsList = getAssets(projectIds,assetTypes,contentType);
         for (Asset asset : assetsList) {
+            try{
             String typeKey = MappingEngine.getAssetType(asset);
             String assetName = asset.getName().split("projects/")[1];
+            if (Objects.equals(MappingEngine.getAssetType(asset), AssetMapping.PROJECT)){
+                Resource resource = MappingEngine.getResource(asset);
+                Map<String, Value> fields = MappingEngine.getFields(resource);
+                assetName = MappingEngine.getStringValue(fields,"name").toLowerCase();
+            }
 
             if (TYPE_MAPPING.containsKey(typeKey)) {
                 String mappedType = TYPE_MAPPING.get(typeKey);
@@ -75,6 +82,10 @@ public class PurgeService {
                 log.info("Asset classified: {} → {}", mappedType, assetName);
             } else {
                 log.info("Asset not processed (unknown type): {}", typeKey);
+            }
+            }
+            catch (Exception e){
+                log.error("error while classifying assets in purge : " + e);
             }
         }
 

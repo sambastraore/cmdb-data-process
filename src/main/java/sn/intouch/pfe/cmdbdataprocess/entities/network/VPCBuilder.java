@@ -25,7 +25,7 @@ public class VPCBuilder {
             String firewallRules = MappingEngine.getStringValue(fields,"networkFirewallPolicyEnforcementOrder");
             Map<String,Value> routingConfigs = MappingEngine.getStructValue(fields, "routingConfig");
             String routingMode = MappingEngine.getStringValue(routingConfigs,"routingMode");
-            String projectName = name.split("/")[0].toLowerCase();
+            String projectName = realName.split("/")[0].toLowerCase();
 
             String url = Config.baseUrl + "classes/VirtualPrivateCloud/cards";
             String body = "{"

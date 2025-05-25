@@ -233,7 +233,7 @@ public class CmdbService {
 
     private static void relationProcessing(Map<String, List<?>> map) throws InterruptedException, IOException, JSONException {
         for (Map.Entry<String, List<?>> entry : map.entrySet()) {
-            try{
+
 
 
             String assetType = entry.getKey();
@@ -242,6 +242,7 @@ public class CmdbService {
             log.info("Adding relations by type : " + assetType);
 
             for (Object asset : assets) {
+                try{
                 if (asset != null){
                     switch (assetType) {
                         case AssetMapping.VM_INSTANCE :
@@ -274,12 +275,12 @@ public class CmdbService {
                         default:
                             log.info("this is a default treatment");
                     }
+                }}catch (Exception e){
+                    log.error("error while processing relationship : " + e);
                 }
 
             }
-        }catch (Exception e){
-            log.error("error while processing relationship : " + e);
-            }
+
         }
     }
 
@@ -291,24 +292,42 @@ public class CmdbService {
 
         if (apacheNames != null && !apacheNames.isEmpty()){
             for (String name : apacheNames){
+                try {
                 ApacheRelation.updateApacheRelation(name);
+            }catch (Exception e){
+                    log.error("error while processing apache relations");
+                }
             }
         }
 
 
         if (wildflyNames != null && !wildflyNames.isEmpty()){
         for (String name : wildflyNames){
+            try{
             WildflyRelation.updateWildflyRelation(name);
-        }}
+        }catch (Exception e){
+                log.error("error while processing apache relations");
+            }
+        }
+        }
 
         if (mysqlNames != null && !mysqlNames.isEmpty()){
         for (String name : mysqlNames){
+            try{
             MySQLRelation.updateMySQLRelation(name);
-        }}
+        }catch (Exception e){
+                log.error("error while processing apache relations");
+            }
+        }
+        }
 
         if (vhostNames != null && !vhostNames.isEmpty()){
             for (String name : vhostNames){
+                try{
                 VhostRelation.updateVhostRelation(name);
+            }catch (Exception e){
+                    log.error("error while processing apache relations");
+                }
             }
         }
     }

@@ -90,5 +90,4 @@ public class PurgeTrigger {
         ContentType contentType = ContentType.RESOURCE;
         purgeService.deleteAssets(projectIds, assetTypes, contentType);
     }
-//pour faire purge  vm resources mieux vaut fixer une date "lastSeen" et supprimer. Au pire des cas le script les recrée
 }

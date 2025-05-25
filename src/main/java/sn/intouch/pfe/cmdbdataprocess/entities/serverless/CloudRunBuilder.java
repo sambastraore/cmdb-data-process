@@ -34,7 +34,7 @@ public class CloudRunBuilder {
             Map <String, Value> annotations = MappingEngine.getStructValue(metadata,"annotations");
             String sqlInstance = MappingEngine.getStringValue(annotations,"run.googleapis.com/cloudsql-instances");
             String [] sqlInstanceParts = sqlInstance.split(":");
-            sqlInstance = sqlInstanceParts[0] + "/instances/" + sqlInstanceParts[2];
+            sqlInstance = (sqlInstanceParts.length>0 ? sqlInstanceParts[0] : "") + "/instances/" + (sqlInstanceParts.length>1 ? sqlInstanceParts[2] : "");
             String networkInformation = MappingEngine.getStringValue(annotations,"run.googleapis.com/network-interfaces");
             String cpu = template.get("spec").getStructValue().getFieldsMap().get("containers").getListValue().getValuesList().get(0).getStructValue().getFieldsMap().get("resources").getStructValue().getFieldsMap().get("limits").getStructValue().getFieldsMap().get("cpu").getStringValue();
             String memory = template.get("spec").getStructValue().getFieldsMap().get("containers").getListValue().getValuesList().get(0).getStructValue().getFieldsMap().get("resources").getStructValue().getFieldsMap().get("limits").getStructValue().getFieldsMap().get("memory").getStringValue();
