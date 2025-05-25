@@ -1,6 +1,8 @@
 package sn.intouch.pfe.cmdbdataprocess.services;
 
 import com.google.cloud.asset.v1.*;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Value;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.scheduling.annotation.Async;
@@ -18,6 +20,7 @@ import sn.intouch.pfe.cmdbdataprocess.entities.network.*;
 import sn.intouch.pfe.cmdbdataprocess.entities.project.Project;
 import sn.intouch.pfe.cmdbdataprocess.entities.project.ProjectBuilder;
 import sn.intouch.pfe.cmdbdataprocess.entities.serverless.*;
+import sn.intouch.pfe.cmdbdataprocess.entities.vhost.VhostRelation;
 import sn.intouch.pfe.cmdbdataprocess.entities.vms.*;
 import sn.intouch.pfe.cmdbdataprocess.entities.wildfly.WildflyRelation;
 import sn.intouch.pfe.cmdbdataprocess.mapping.MappingEngine;
@@ -48,9 +51,10 @@ public class CmdbService {
 
     @Async
     public void listAssets(String[] projectIds, String[] assetTypes, ContentType contentType)
-            throws IOException, IllegalArgumentException {
-        try (AssetServiceClient client = CloudAssetAuthUtil.getAssetServiceClient()) {
+            throws IOException, IllegalArgumentException, JSONException, InterruptedException {
+
             for (String idProject : projectIds){
+                try (AssetServiceClient client = CloudAssetAuthUtil.getAssetServiceClient()) {
                 ProjectName parent = ProjectName.of(idProject);
 
                 ListAssetsRequest request =
@@ -58,7 +62,7 @@ public class CmdbService {
                                 .setParent(parent.toString())
                                 .addAllAssetTypes(Arrays.asList(assetTypes))
                                 .setContentType(contentType)
-                                .setPageSize(30)
+                                .setPageSize(1000)
 
                                 .build();
                 AssetServiceClient.ListAssetsPagedResponse response = client.listAssets(request);
@@ -69,23 +73,30 @@ public class CmdbService {
                     response = client.listAssets(request);
                     responseProcessing(response,idProject);
                 }
-
+                } catch (Exception e) {
+                    log.error("error while processing data : " + e);
+                }
 
             }
 
+
             relationProcessing(assetsByType);
             vmResourcesRelationProcessing();
-        } catch (InterruptedException | JSONException e) {
-            throw new RuntimeException(e);
-        }
+
+            //modifier le script bash today pour prendre en compte l'arborescence du nom
+
     }
 
 
 
     private static void responseProcessing(AssetServiceClient.ListAssetsPagedResponse response, String projectId) throws InterruptedException, IOException, JSONException {
         for (Asset asset : response.getPage().getValues()) {
+            try {
+
+
             String type = MappingEngine.getAssetType(asset);
             log.info("type : " + type);
+
             switch (type){
                 case AssetMapping.CLOUD_FUNCTION:
                     CloudFunction cloudFunction = CloudFunctionBuilder.cloudFunctionBuilder(asset,projectId);
@@ -174,7 +185,11 @@ public class CmdbService {
                     log.info("IP : " + (cloudSQL != null ? cloudSQL.getIPAddress():""));
                     log.info("vpc : " + (cloudSQL != null ? cloudSQL.getVpc():""));
                     break;
-                case AssetMapping.CLOUD_RUN_EXECUTION:
+                case AssetMapping.CLOUD_RUN_SERVICE:
+                    //Map<Descriptors.FieldDescriptor,Object> allFields = asset.getAllFields();
+                    //Resource resource = (Resource) allFields.get(Asset.getDescriptor().findFieldByName("resource"));
+                    //Map<String, Value> fields = resource.getData().getFieldsMap();
+                    //log.info(fields);
                     CloudRun cloudRun = CloudRunBuilder.cloudRunBuilder(asset,projectId);
                     cloudRuns.add(cloudRun);
                     log.info ("name : " + (cloudRun != null ? cloudRun.getName():""));
@@ -182,9 +197,8 @@ public class CmdbService {
                     log.info ("url : " + (cloudRun != null ? cloudRun.getUrl():""));
                     log.info ("ram : " + (cloudRun != null ? cloudRun.getRam():""));
                     log.info ("cpu : " + (cloudRun != null ? cloudRun.getCpu():""));
-                    log.info ("maxRetries : " + (cloudRun != null ? cloudRun.getMaxRetries():""));
-                    log.info ("kind : " + (cloudRun != null ? cloudRun.getKind():""));
                     log.info ("sqlInstance : " + (cloudRun != null ? cloudRun.getCloudSQLInstance():""));
+                    log.info("networkInfos : " + (cloudRun != null ? cloudRun.getNetworkInformations():""));
                     break;
                 default:
                     log.info("not processed asset");
@@ -198,7 +212,11 @@ public class CmdbService {
             //System.out.println(resource.getData().getFieldsMap());
             //System.out.println(asset.getAllFields());
             //System.out.println("-------------------------------------------------");
+        }catch (Exception e){
+                log.error("error while processing asset : " + e);
+            }
         }
+
         assetsByType.put(AssetMapping.CLOUD_FUNCTION, cloudFunctions);
         assetsByType.put(AssetMapping.DISK, disks);
         assetsByType.put(AssetMapping.SUBNETWORK, subnets);
@@ -209,11 +227,15 @@ public class CmdbService {
         assetsByType.put(AssetMapping.INSTANCE_GROUP, instanceGroups);
         assetsByType.put(AssetMapping.CLOUD_SQL, cloudSQLs);
         assetsByType.put(AssetMapping.CLOUD_RUN_EXECUTION, cloudRuns);
+
     }
 
 
     private static void relationProcessing(Map<String, List<?>> map) throws InterruptedException, IOException, JSONException {
         for (Map.Entry<String, List<?>> entry : map.entrySet()) {
+            try{
+
+
             String assetType = entry.getKey();
             List<?> assets = entry.getValue();
 
@@ -255,6 +277,9 @@ public class CmdbService {
                 }
 
             }
+        }catch (Exception e){
+            log.error("error while processing relationship : " + e);
+            }
         }
     }
 
@@ -262,20 +287,29 @@ public class CmdbService {
         List<String> apacheNames = HttpUtil.getNames("Apache");
         List<String> wildflyNames = HttpUtil.getNames("Wildfly");
         List<String> mysqlNames = HttpUtil.getNames("MySQL");
+        List<String> vhostNames = HttpUtil.getNames("Vhost");
 
-        assert apacheNames != null;
-        for (String name : apacheNames){
-            ApacheRelation.updateApacheRelation(name);
+        if (apacheNames != null && !apacheNames.isEmpty()){
+            for (String name : apacheNames){
+                ApacheRelation.updateApacheRelation(name);
+            }
         }
 
-        assert wildflyNames != null;
+
+        if (wildflyNames != null && !wildflyNames.isEmpty()){
         for (String name : wildflyNames){
             WildflyRelation.updateWildflyRelation(name);
-        }
+        }}
 
-        assert mysqlNames != null;
+        if (mysqlNames != null && !mysqlNames.isEmpty()){
         for (String name : mysqlNames){
             MySQLRelation.updateMySQLRelation(name);
+        }}
+
+        if (vhostNames != null && !vhostNames.isEmpty()){
+            for (String name : vhostNames){
+                VhostRelation.updateVhostRelation(name);
+            }
         }
     }
 }

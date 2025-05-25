@@ -19,14 +19,13 @@ public class InstanceGroupBuilder {
         String manager = MappingEngine.getInstanceGroupRelationships(projectId,asset);
         String[] assetNames = {name,manager};
         if(History.toUpdate(projectId, List.of(assetNames))){
-            name = MappingEngine.getRealValue(name);
+            name = name.split("projects/")[1];
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);
             String description = MappingEngine.getStringValue(fields,"description");
             String region = MappingEngine.getLocation(resource);
-            String subnet = MappingEngine.getStringValue(fields,"subnetwork").split("regions/")[1];
+            String subnet = MappingEngine.getStringValue(fields,"subnetwork");
             String vpc = MappingEngine.getStringValue(fields,"network");
-            vpc = MappingEngine.getRealValue(vpc);
 
             String url = Config.baseUrl + "classes/InstanceGroup/cards";
             String body = "{"

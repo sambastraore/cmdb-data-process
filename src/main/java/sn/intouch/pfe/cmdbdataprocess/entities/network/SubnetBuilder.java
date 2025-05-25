@@ -9,10 +9,12 @@ import sn.intouch.pfe.cmdbdataprocess.mapping.History;
 import sn.intouch.pfe.cmdbdataprocess.mapping.MappingEngine;
 import sn.intouch.pfe.cmdbdataprocess.utils.Config;
 import sn.intouch.pfe.cmdbdataprocess.utils.HttpUtil;
+import sn.intouch.pfe.cmdbdataprocess.utils.LastUpdatedAudit;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
 
 
 @Log4j2
@@ -26,14 +28,12 @@ public class SubnetBuilder {
             String location = MappingEngine.getLocation(resource);
             String purpose = MappingEngine.getStringValue(fields,"purpose");
             String vpcName = MappingEngine.getStringValue(fields, "network");
-            String name = MappingEngine.getName(asset).split("regions/")[1];
-            vpcName = MappingEngine.getRealValue(vpcName );
-
+            String realName = MappingEngine.getName(asset).split("projects/")[1]; // take the real name
             String url = Config.baseUrl + "classes/Subnet/cards";
 
             String body = "{"
                     + "\"range\": \"" + range + "\","
-                    + "\"name\": \"" + name + "\","
+                    + "\"name\": \"" + realName + "\","
                     + "\"region\": \"" + location + "\","
                     + "\"purpose\": \"" + purpose + "\""
                     + "}";
@@ -47,9 +47,11 @@ public class SubnetBuilder {
                     .region(location)
                     .purpose(purpose)
                     .VPCName(vpcName)
-                    .name(name)
+                    .name(realName)
                     .build();
         }
         return null;
     }
+
+
 }

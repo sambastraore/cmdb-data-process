@@ -10,5 +10,6 @@ import lombok.*;
 public class Project {
     private String projectID;
     private String projectName;
+    private String name;
 
 }

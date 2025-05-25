@@ -60,6 +60,6 @@ public class History {
                     return true;
             }
         }
-        return false;
+        return true;
     }
 }

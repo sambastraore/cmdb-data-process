@@ -18,14 +18,14 @@ public class VPCBuilder {
         String name = MappingEngine.getName(asset);
         String[] assetNames = {name};
         if (History.toUpdate(projectId, List.of(assetNames))){
-            String realName = MappingEngine.getRealValue(name);
+            String realName = name.split("projects/")[1]; // take the original name
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);
             String description = MappingEngine.getStringValue(fields, "description");
             String firewallRules = MappingEngine.getStringValue(fields,"networkFirewallPolicyEnforcementOrder");
             Map<String,Value> routingConfigs = MappingEngine.getStructValue(fields, "routingConfig");
             String routingMode = MappingEngine.getStringValue(routingConfigs,"routingMode");
-            String projectName = MappingEngine.getProjectFromName(name).toLowerCase();
+            String projectName = name.split("/")[0].toLowerCase();
 
             String url = Config.baseUrl + "classes/VirtualPrivateCloud/cards";
             String body = "{"

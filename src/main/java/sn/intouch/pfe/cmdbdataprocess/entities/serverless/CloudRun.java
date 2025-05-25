@@ -12,15 +12,10 @@ public class CloudRun {
     private String name;
     private String region;
     private String url;
-    private String serviceName;
     private String ram;
     private String cpu;
-    private Double maxRetries;
-    private String kind;
     private String appID;
-    private String ingress;
-    private String egress;
-
+    private String networkInformations;
     //relationship
     private NAT nat;
 

@@ -20,7 +20,7 @@ public class DiskBuilder {
         List<String> assetNames = new ArrayList<>();
         assetNames.add(name);
         if (History.toUpdate(projectId,assetNames)){
-            String realName = MappingEngine.getRealValue(name);
+            String realName = name.split("projects/")[1]; // take the real name
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);
             String size = MappingEngine.getStringValue(fields, "sizeGb");

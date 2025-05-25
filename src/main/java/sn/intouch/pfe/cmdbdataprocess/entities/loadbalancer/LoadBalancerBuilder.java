@@ -25,7 +25,7 @@ public class LoadBalancerBuilder {
         List<String> frontends = components.get("frontends");
         assetNames.addAll(frontends);
         if(History.toUpdate(projectId,assetNames)){
-            name = MappingEngine.getRealValue(name);
+            name = name.split("projects/")[1];
             Resource resource = MappingEngine.getResource(urlMap);
             String location = MappingEngine.getLocation(resource);
             Map<String, Value> fields = MappingEngine.getFields(resource);

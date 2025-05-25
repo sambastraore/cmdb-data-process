@@ -3,6 +3,7 @@ package sn.intouch.pfe.cmdbdataprocess.entities.vms;
 import com.google.cloud.asset.v1.Asset;
 import com.google.cloud.asset.v1.Resource;
 import com.google.protobuf.Value;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import sn.intouch.pfe.cmdbdataprocess.mapping.History;
 import sn.intouch.pfe.cmdbdataprocess.mapping.MappingEngine;
@@ -12,6 +13,7 @@ import sn.intouch.pfe.cmdbdataprocess.utils.HttpUtil;
 import java.io.IOException;
 import java.util.*;
 
+@Log4j2
 public class VMBuilder {
     public static VirtualMachine vmBuilder (Asset asset, String projectId) throws IOException, JSONException {
         String name = MappingEngine.getName(asset);
@@ -21,7 +23,7 @@ public class VMBuilder {
         if (!Objects.equals("",instanceGroupName))
             assetNames.add(instanceGroupName);
         if (History.toUpdate(projectId,assetNames)){
-            name = MappingEngine.getRealValue(name);
+            name = name.split("projects/")[1];
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);
             String zone = MappingEngine.getStringValue(fields,"zone");
@@ -38,7 +40,7 @@ public class VMBuilder {
             String status = MappingEngine.getStringValue(fields,"status");
             List<Value> disks = MappingEngine.getListValue(fields,"disks");
             String disk = disks.get(0).getStructValue().getFieldsMap().get("source").getStringValue();
-            disk = MappingEngine.getRealValue(disk);
+            //disk = MappingEngine.getRealValue(disk);
 
             String url = Config.baseUrl + "classes/VirtualMachine/cards";
             String body = "{"

@@ -26,6 +26,7 @@ import sn.intouch.pfe.cmdbdataprocess.entities.serverless.*;
 import sn.intouch.pfe.cmdbdataprocess.entities.vms.*;
 import sn.intouch.pfe.cmdbdataprocess.entities.wildfly.WildflyRelation;
 import sn.intouch.pfe.cmdbdataprocess.services.CmdbService;
+import sn.intouch.pfe.cmdbdataprocess.services.PurgeService;
 import sn.intouch.pfe.cmdbdataprocess.utils.CloudAssetAuthUtil;
 import sn.intouch.pfe.cmdbdataprocess.utils.AssetMapping;
 import sn.intouch.pfe.cmdbdataprocess.utils.HttpUtil;
@@ -37,17 +38,17 @@ import java.util.*;
 @RestController
 @RequestMapping("/cmdb")
 @RequiredArgsConstructor
-public class CMDBTrigger {
+public class PurgeTrigger {
 
-    private final CmdbService cmdbService;
-    @PostMapping("/trigger")
-    public ResponseEntity<ResponseWrapper<Integer>> triggerCmdb(){
+    private final PurgeService purgeService;
+    @PostMapping("/purge")
+    public ResponseEntity<ResponseWrapper<Integer>> purgeCmdb(){
         try{
-            listAssets();
-            ResponseWrapper<Integer> responseWrapper = new ResponseWrapper<>("Success while triggering CMDB !",200,0);
+            purgeAssets();
+            ResponseWrapper<Integer> responseWrapper = new ResponseWrapper<>("Success while purging CMDB !",200,0);
             return ResponseEntity.ok(responseWrapper);
         } catch (Exception e) {
-            ResponseWrapper<Integer> responseWrapper = new ResponseWrapper<>("Error while triggering CMDB ! : " + e,500,-1);
+            ResponseWrapper<Integer> responseWrapper = new ResponseWrapper<>("Error while purging CMDB ! : " + e,500,-1);
             return ResponseEntity.internalServerError().body(responseWrapper);
         }
     }
@@ -55,16 +56,17 @@ public class CMDBTrigger {
 
 
 
-    public void listAssets() throws IOException, IllegalArgumentException, JSONException, InterruptedException {
+    public void purgeAssets() throws IOException, IllegalArgumentException, JSONException, InterruptedException {
         //String projectId = "eme-iacc";
         //String projectId = "dev-top20";
         String [] projectIds = {"eme-iacc",
-                                "dev-top20"
+                "dev-top20"
         };
         String[] assetTypes = {
                 //AssetMapping.IP_ADDRESSES,
                 AssetMapping.DISK,
                 //AssetMapping.FORWARDING_RULE,
+                AssetMapping.CLOUD_RUN_EXECUTION,
                 AssetMapping.VPC,
                 AssetMapping.CLOUD_SQL,
                 AssetMapping.VM_INSTANCE,
@@ -86,7 +88,7 @@ public class CMDBTrigger {
                 //AssetMapping.VPN_TUNNEL
         };
         ContentType contentType = ContentType.RESOURCE;
-        cmdbService.listAssets(projectIds, assetTypes, contentType);
+        purgeService.deleteAssets(projectIds, assetTypes, contentType);
     }
-
+//pour faire purge  vm resources mieux vaut fixer une date "lastSeen" et supprimer. Au pire des cas le script les recrée
 }

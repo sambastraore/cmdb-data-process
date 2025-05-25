@@ -19,7 +19,7 @@ public class CloudFunctionBuilder {
         String name = MappingEngine.getName(asset);
         String[] assetNames = {name};
         if(History.toUpdate(projectId, List.of(assetNames))){
-            String realName = MappingEngine.getRealValue(name);
+            String realName = name.split("projects/")[1];
             Resource resource = MappingEngine.getResource(asset);
             String location = MappingEngine.getLocation(resource);
             Map<String, Value> fields = MappingEngine.getFields(resource);

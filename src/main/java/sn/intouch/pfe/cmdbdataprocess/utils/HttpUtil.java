@@ -98,7 +98,7 @@ public class HttpUtil {
 
 
 
-    private static HttpURLConnection getHttpURLConnection(String url, String body, String auth, String method) throws IOException {
+    public static HttpURLConnection getHttpURLConnection(String url, String body, String auth, String method) throws IOException {
         URL tokenURL = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) tokenURL.openConnection();
         connection.setRequestMethod(method);
@@ -215,7 +215,7 @@ public class HttpUtil {
 
     }
 
-    private static JSONArray getTheResponse(HttpURLConnection connection) throws IOException, JSONException {
+    public static JSONArray getTheResponse(HttpURLConnection connection) throws IOException, JSONException {
         BufferedReader in;
         in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         String line;

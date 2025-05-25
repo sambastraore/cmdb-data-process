@@ -23,7 +23,7 @@ public class CloudSQLBuilder {
         if (History.toUpdate(projectId,assetNames)){
             Resource resource = MappingEngine.getResource(asset);
             Map<String, Value> fields = MappingEngine.getFields(resource);
-            name = MappingEngine.getRealValue(name);
+            name = name.split("projects/")[1];
             String region = MappingEngine.getLocation(resource);
             String databaseVersion = MappingEngine.getStringValue(fields,"databaseInstalledVersion");
             List<Value> ipAddresses = MappingEngine.getListValue(fields,"ipAddresses");
@@ -36,7 +36,6 @@ public class CloudSQLBuilder {
             Boolean backup = settings.get("backupConfiguration").getStructValue().getFieldsMap().get("enabled").getBoolValue();
             Map<String, Value> ipConfigs = MappingEngine.getStructValue(settings, "ipConfiguration");
             String vpc = ipConfigs.get("privateNetwork") != null ? ipConfigs.get("privateNetwork").getStringValue() : "";
-            vpc = MappingEngine.getRealValue(vpc);
             String availabilityType = settings.get("availabilityType").getStringValue();
             String activationPolicy = settings.get("activationPolicy").getStringValue();
             String diskSize = settings.get("dataDiskSizeGb").getStringValue();

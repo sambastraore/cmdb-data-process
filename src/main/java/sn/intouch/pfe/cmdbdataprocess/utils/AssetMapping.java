@@ -21,6 +21,8 @@ public class AssetMapping {
     public static final String VPN_TUNNEL = "compute.googleapis.com/VpnTunnel";
     public static final String TARGET_TCP_PROXY = "compute.googleapis.com/TargetTcpProxy";
     public static final String CLOUD_RUN_EXECUTION = "run.googleapis.com/Execution";
+    public static final String CLOUD_RUN_JOB = "run.googleapis.com/Job";
+    public static final String CLOUD_RUN_SERVICE = "run.googleapis.com/Service";
     public static final String CLOUD_FUNCTION = "cloudfunctions.googleapis.com/Function";
     public static final String APP_ENGINE_APPLICATION = "appengine.googleapis.com/Application";
     public static final String SUBNETWORK = "compute.googleapis.com/Subnetwork";
